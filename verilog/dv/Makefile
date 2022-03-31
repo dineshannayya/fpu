@@ -34,13 +34,15 @@ default: clean rtl
 
 rtl: clean  
 	iverilog-vpi fpu_sp.c
+	iverilog-vpi fpu_sp_tc.c
 	iverilog -g2012  -D SPEEDSIM  -DFUNCTIONAL  tb_top.sv -f filelist_rtl.f -o tb_top.vvp
-	vvp -M. -m fpu_sp tb_top.vvp
+	vvp -M. -m fpu_sp -m fpu_sp_tc tb_top.vvp
 
 gate: clean  
 	iverilog-vpi fpu_sp.c
+	iverilog-vpi fpu_sp_tc.c
 	iverilog -g2012  -D GL -D SPEEDSIM  -DFUNCTIONAL  tb_top.sv -f filelist_gate.f  -o tb_top.vvp
-	vvp -M. -m fpu_sp tb_top.vvp
+	vvp -M. -m fpu_sp -m fpu_sp_tc tb_top.vvp
 
 help:
 	@echo "To run RTL  simulation: make rtl"

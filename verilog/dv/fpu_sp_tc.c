@@ -1,11 +1,16 @@
+//-------------------------------------
+// Single Precision Type cast functions
+//   *F2I - Floating to Int
+//   *I2F - Int to Float
+//-------------------------------------
+
 #include <stdlib.h> /* ANSI C standard library */
 #include <stdio.h> /* ANSI C standard input/output library */
 #include <stdarg.h> /* ANSI C standard arguments library */
 #include  "vpi_user.h"  /*  IEEE 1364 PLI VPI routine library  */
 
-#define CMD_FPU_ADD 1
-#define CMD_FPU_MUL 2
-#define CMD_FPU_DIV 3
+#define CMD_FPU_SP_F2I 4  // Single Precision (32 bit) Float to Integer
+#define CMD_FPU_SP_I2F 5  // Single Precision (32 bit) Integer to Float
 
 /* prototypes of PLI application routine names */
 PLI_INT32 PLIbook_FpuAddSizetf(PLI_BYTE8  *user_data),
@@ -33,7 +38,7 @@ PLI_INT32  PLIbook_FpuAddCompiletf(PLI_BYTE8  *user_data)
        systf_handle = vpi_handle(vpiSysTfCall, NULL);
        arg_itr = vpi_iterate(vpiArgument, systf_handle);
        if (arg_itr == NULL) {
-       vpi_printf("ERROR: $c_fpu requires 3 arguments; has none\n");
+       vpi_printf("ERROR: $c_fpu_tc requires 2 arguments; has none\n");
        err_flag = 1;
        break;
    }
@@ -42,14 +47,14 @@ PLI_INT32  PLIbook_FpuAddCompiletf(PLI_BYTE8  *user_data)
    if ( (tfarg_type != vpiReg) &&
        (tfarg_type != vpiIntegerVar) &&
        (tfarg_type != vpiConstant) ) {
-       vpi_printf("ERROR: $c_fpu arg1 must be number, variable or net\n");
+       vpi_printf("ERROR: $c_fpu_tc arg1 must be number, variable or net\n");
        err_flag = 1;
        break;
    }
    
    arg_handle = vpi_scan(arg_itr);
    if (arg_handle == NULL) {
-      vpi_printf("ERROR: $c_fpu requires 2nd argument\n");
+      vpi_printf("ERROR: $c_fpu_tc requires 2nd argument\n");
       err_flag = 1;
       break;
    }
@@ -57,27 +62,13 @@ PLI_INT32  PLIbook_FpuAddCompiletf(PLI_BYTE8  *user_data)
    if ( (tfarg_type != vpiReg) &&
       (tfarg_type != vpiIntegerVar) &&
       (tfarg_type != vpiConstant) ) {
-      vpi_printf("ERROR: $c_fpu arg2 must be number, variable or net\n");
-      err_flag = 1;
-      break;
-   }
-   arg_handle = vpi_scan(arg_itr);
-   if (arg_handle == NULL) {
-      vpi_printf("ERROR: $c_fpu requires 3nd argument\n");
-      err_flag = 1;
-      break;
-   }
-   tfarg_type = vpi_get(vpiType, arg_handle);
-   if ( (tfarg_type != vpiReg) &&
-      (tfarg_type != vpiIntegerVar) &&
-      (tfarg_type != vpiConstant) ) {
-      vpi_printf("ERROR: $c_fpu arg3 must be number, variable or net\n");
+      vpi_printf("ERROR: $c_fpu_tc arg2 must be number, variable or net\n");
       err_flag = 1;
       break;
    }
 
    if (vpi_scan(arg_itr) != NULL) {
-       vpi_printf("ERROR: $c_fpu requires 3 arguments; has too many\n");
+       vpi_printf("ERROR: $c_fpu_tc requires 2 arguments; has too many\n");
        vpi_free_object(arg_itr);
        err_flag = 1;
        break;
@@ -97,12 +88,13 @@ PLI_INT32  PLIbook_FpuAddCalltf(PLI_BYTE8  *user_data)
 {
    s_vpi_value value_s;
    vpiHandle systf_handle,  arg_itr,  arg_handle;
-   PLI_INT32 cmd,in1, in2;
+   PLI_INT32 cmd,din;
    float result;
+   int c;
    systf_handle = vpi_handle(vpiSysTfCall, NULL);
    arg_itr = vpi_iterate(vpiArgument, systf_handle);
    if (arg_itr == NULL) {
-       vpi_printf("ERROR:  $c_fpu failed to obtain systf arg handles\n");
+       vpi_printf("ERROR:  $c_fpu_tc failed to obtain systf arg handles\n");
        return(0);
    }
    /* read cmd from systf arg 1 (compiletf has already verified) */
@@ -115,29 +107,19 @@ PLI_INT32  PLIbook_FpuAddCalltf(PLI_BYTE8  *user_data)
    /* read input1 from systf arg 2 (compiletf has already verified) */
    arg_handle = vpi_scan(arg_itr);
    vpi_get_value(arg_handle,  &value_s);
-   in1 = value_s.value.integer;
-
-   /* read input2 from systf arg 3 (compiletf has already verified) */
-   arg_handle = vpi_scan(arg_itr);
-   vpi_free_object(arg_itr); /* not calling scan until returns null */
-   vpi_get_value(arg_handle,  &value_s);
-   in2 = value_s.value.integer;
+   din = value_s.value.integer;
 
    /* add floating point inputs */
-   float a = *((float*)&in1);
-   float b = *((float*)&in2);
-   if(cmd == CMD_FPU_ADD) {
-        result = a+ b;
-        vpi_printf("c-func: Floating Addition: Input1: %f Input2: %f Result: %f\n",a,b,result);
-   } else if(cmd == CMD_FPU_MUL)  {
-        result = a* b;
-        vpi_printf("c-func: Floating Multiplier: Input1: %f Input2: %f Result: %f\n",a,b,result);
-   } else if(cmd == CMD_FPU_DIV)  {
-        result = a/b;
-        vpi_printf("c-func: Floating Divider: Input1: %f Input2: %f Result: %f\n",a,b,result);
-   }
+   if(cmd == CMD_FPU_SP_F2I) {
+	result = *((float*)&din);
+        c = (int) result;
+        vpi_printf("c-func: Floating Float 2 integer: Input: %f  Result: %d\n",result,c);
+   } else if(cmd == CMD_FPU_SP_I2F)  {
+	result = (float) din;
+        c  = *((int*)&result);
+        vpi_printf("c-func: Floating Int 2 Float: Input: %d Result: %f\n",din,result);
+   } 
    /* write result to simulation as return value $fpu_add */
-   int c = *((int*)&result);
    value_s.value.integer =  (PLI_INT32)c;
    vpi_put_value(systf_handle,  &value_s, NULL, vpiNoDelay);
    return(0);
@@ -149,7 +131,7 @@ PLI_INT32  PLIbook_FpuAddCalltf(PLI_BYTE8  *user_data)
 ****/
 PLI_INT32  PLIbook_FpuAddStartOfSim(s_cb_data  *callback_data)
 {
-   vpi_printf("\n$c_fpu PLI application is being used.\n\n");
+   vpi_printf("\n$c_fpu_tc PLI application is being used.\n\n");
    return(0);
 }
 
@@ -165,7 +147,7 @@ void  PLIbook_fpu_add_register()
     
     tf_data.type = vpiSysFunc;
     tf_data.sysfunctype = vpiSysFuncSized;
-    tf_data.tfname =  "$c_fpu_sp";
+    tf_data.tfname =  "$c_fpu_sp_tc";
     tf_data.calltf = PLIbook_FpuAddCalltf;
     tf_data.compiletf = PLIbook_FpuAddCompiletf;
     tf_data.sizetf = PLIbook_FpuAddSizetf;

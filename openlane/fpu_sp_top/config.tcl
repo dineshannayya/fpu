@@ -35,6 +35,8 @@ set ::env(VERILOG_FILES) "\
         $script_dir/../../verilog/rtl/fpu_sp_add.sv  \
         $script_dir/../../verilog/rtl/fpu_sp_mul.sv  \
         $script_dir/../../verilog/rtl/fpu_sp_div.sv  \
+        $script_dir/../../verilog/rtl/fpu_sp_i2f.sv  \
+        $script_dir/../../verilog/rtl/fpu_sp_f2i.sv  \
         $script_dir/../../verilog/rtl/fpu_sp_top.sv     \
 	"
 set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl ]

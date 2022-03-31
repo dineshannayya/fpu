@@ -2,6 +2,8 @@
 ../rtl/fpu_sp_add.sv
 ../rtl/fpu_sp_mul.sv
 ../rtl/fpu_sp_div.sv
+../rtl/fpu_sp_f2i.sv
+../rtl/fpu_sp_i2f.sv
 ../rtl/fpu_dp_add.sv
 ../rtl/fpu_dp_mul.sv
 ../rtl/fpu_dp_div.sv

@@ -108,20 +108,15 @@ Floating point multiplication in binary:
 module tb_top;
 parameter CLK_PERIOD = 10;
 
-parameter CMD_FPU_SP_ADD  = 4'b0001; // Single Precision (32 bit) Adder 
-parameter CMD_FPU_SP_MUL  = 4'b0010; // Single Precision (32 bit) Multipler
-parameter CMD_FPU_SP_DIV  = 4'b0011; // Single Precision (32 bit) Divider
-parameter CMD_FPU_DP_ADD  = 4'b0101; // Double Precision (64 bit) Adder
-parameter CMD_FPU_DP_MUL  = 4'b0110; // Double Precision (64 bit) Multipler
-parameter CMD_FPU_DP_DIV  = 4'b0111; // Double Precision (64 bit) Divider
+`include "fpu_parms.v"
 
 reg          clk;
 reg          rst_n;
 reg [3:0]    cmd;
-reg [63:0]   din1;
-reg [63:0]   din2;
+reg [31:0]   din1;
+reg [31:0]   din2;
 reg          dval;
-wire [63:0] result;
+wire [31:0] result;
 reg [31:0]  c_result;
 wire        rdy;
 reg         test_fail;
@@ -138,6 +133,8 @@ begin
    test_fpu_sp(CMD_FPU_SP_ADD,"FPU SP ADD");;
    test_fpu_sp(CMD_FPU_SP_MUL,"FPU SP MUL");;
    test_fpu_sp(CMD_FPU_SP_DIV,"FPU SP DIV");;
+   test_fpu_sp_i2f(CMD_FPU_SP_I2F,"FPU SP I2F");;
+   test_fpu_sp_f2i(CMD_FPU_SP_F2I,"FPU SP F2I");;
    #100;
    $finish();
 end
