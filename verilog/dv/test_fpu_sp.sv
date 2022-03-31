@@ -107,13 +107,14 @@ input [31:0] in1;
 input [31:0] in2;
 begin
      repeat (1) @(posedge clk);
-     cmd  = cin;
-     din1 = in1;
-     din2 = in2;
-     dval = 1;
+     cmd  = #1 cin;
+     din1 = #1 in1;
+     din2 = #1 in2;
+     dval = #1 1;
      repeat (1) @(posedge clk);
-     dval = 0;
+     dval = #1 0;
      wait(rdy == 1);
+     #1;
      c_result = $c_fpu_sp(cmd,din1,din2);
      // If the result is Nan (not valid number), 
      // Exponent = 255 and Significand = Non Zero is considered as Nan

@@ -147,9 +147,16 @@ end
 //   $dumpvars(0, tb_top);
 //end
 
+wire USER_VDD1V8 = 1'b1;
+wire VSS = 1'b0;
 
 
-fpu_top u_fpu_top (
+fpu_sp_top u_fpu_sp_top (
+      `ifdef USE_POWER_PINS
+          .vccd1 (USER_VDD1V8),// User area 1 1.8V supply
+          .vssd1 (VSS),// User area 1 digital ground
+      `endif
+
         .clk         (clk     ),
         .rst_n       (rst_n   ),
         .cmd         (cmd     ),

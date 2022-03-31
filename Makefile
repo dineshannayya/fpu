@@ -16,41 +16,33 @@
 # // SPDX-FileContributor: Dinesh Annayya <dinesha@opencores.org>
 # // //////////////////////////////////////////////////////////////////////////
 #------------------------------------------------------------------------------
-# Makefile for Synthesis
+# Makefile for Simulation and Synthesis
 #------------------------------------------------------------------------------
 
 # Paths
 export ROOT_DIR := $(shell pwd)
 
-### To Enable IVERILOG FST DUMP
-export IVERILOG_DUMPER = fst
-
-
 
 # Targets
-.PHONY: clean rtl gate help
+.PHONY: clean rtl gate synth help
 
 default: clean rtl
 
-rtl: clean  
-	iverilog-vpi fpu_sp.c
-	iverilog -g2012  -D SPEEDSIM  -DFUNCTIONAL  tb_top.sv -f filelist_rtl.f -o tb_top.vvp
-	vvp -M. -m fpu_sp tb_top.vvp
+rtl: 
+	cd verilog/dv && $(MAKE) rtl
 
-gate: clean  
-	iverilog-vpi fpu_sp.c
-	iverilog -g2012  -D GL -D SPEEDSIM  -DFUNCTIONAL  tb_top.sv -f filelist_gate.f  -o tb_top.vvp
-	vvp -M. -m fpu_sp tb_top.vvp
+gate: synth
+	cd verilog/dv && $(MAKE) gate
+
+synth:
+	cd synth && $(MAKE) synth
 
 help:
 	@echo "To run RTL  simulation: make rtl"
 	@echo "To run Gate simulation: make gate"
+	@echo "To run synthesis: make synth"
 
 
 
 clean:
-	$(RM) -R *.vpi
-	$(RM) -R *.vvp
-	$(RM) -R *.vcd
-	$(RM) -R *.fst
-	$(RM) -R *.o
+	cd verilog/dv && $(MAKE) clean && cd ../../synth && $(MAKE) clean 

@@ -21,36 +21,33 @@
 
 # Paths
 export ROOT_DIR := $(shell pwd)
-
-### To Enable IVERILOG FST DUMP
-export IVERILOG_DUMPER = fst
-
+export SYNTH_LOG    := $(ROOT_DIR)/synth.log
+export REPORT_DIR  := $(ROOT_DIR)/reports
+export NETLIST_DIR  := $(ROOT_DIR)/netlist
+export TMP_DIR  := $(ROOT_DIR)/tmp
 
 
 # Targets
-.PHONY: clean rtl gate help
+.PHONY: clean create synth
 
-default: clean rtl
+default: clean create synth
 
-rtl: clean  
-	iverilog-vpi fpu_sp.c
-	iverilog -g2012  -D SPEEDSIM  -DFUNCTIONAL  tb_top.sv -f filelist_rtl.f -o tb_top.vvp
-	vvp -M. -m fpu_sp tb_top.vvp
+synth: clean create  
+	yosys -g -c synth.tcl -l synth.log
 
-gate: clean  
-	iverilog-vpi fpu_sp.c
-	iverilog -g2012  -D GL -D SPEEDSIM  -DFUNCTIONAL  tb_top.sv -f filelist_gate.f  -o tb_top.vvp
-	vvp -M. -m fpu_sp tb_top.vvp
-
-help:
-	@echo "To run RTL  simulation: make rtl"
-	@echo "To run Gate simulation: make gate"
+create:
+	mkdir -p ./tmp/synthesis; 
+	mkdir -p ./reports; 
+	mkdir -p ./netlist;
+	./scripts/libtrim.pl $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib $(PDK_ROOT)/sky130A/libs.tech/openlane/sky130_fd_sc_hd/no_synth.cells > ./tmp/trimmed.lib
+	#create No PG Pin library for hand instantiated cells
+	sed '/pg_pin.*/a \         direction : "inout";'  $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib  > ./tmp/sky130_fd_sc_hd__tt_025C_1v80.no_pg.lib
+	sed -i 's/pg_pin/pin/' ./tmp/sky130_fd_sc_hd__tt_025C_1v80.no_pg.lib
 
 
 
 clean:
-	$(RM) -R *.vpi
-	$(RM) -R *.vvp
-	$(RM) -R *.vcd
-	$(RM) -R *.fst
-	$(RM) -R *.o
+	$(RM) $(SYNTH_LOG)
+	$(RM) -R $(REPORT_DIR)
+	$(RM) -R $(NETLIST_DIR)
+	$(RM) -R $(TMP_DIR)

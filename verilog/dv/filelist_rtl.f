@@ -5,4 +5,4 @@
 ../rtl/fpu_dp_add.sv
 ../rtl/fpu_dp_mul.sv
 ../rtl/fpu_dp_div.sv
-../rtl/fpu_top.sv
+../rtl/fpu_sp_top.sv
