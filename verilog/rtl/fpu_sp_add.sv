@@ -38,7 +38,7 @@
 //////////////////////////////////////////////////////////////////////
 
 
-module fpu_add(
+module fpu_sp_add(
         input  logic          clk,
         input  logic          rst_n,
         input  logic [31:0]   din1,
@@ -53,7 +53,7 @@ module fpu_add(
   reg       [3:0] state;
   parameter WAIT_REQ      = 4'd0,
             UNPACK        = 4'd1,
-            SPECIAL_CASE  = 4'd2,
+            SPECIAL_CASES = 4'd2,
             ALIGN         = 4'd3,
             ADD_0         = 4'd4,
             ADD_1         = 4'd5,
@@ -96,10 +96,10 @@ module fpu_add(
             b_e    <= b[30 : 23] - 127;
             a_s    <= a[31];
             b_s    <= b[31];
-            state <= SPECIAL_CASE;
+            state <= SPECIAL_CASES;
           end
 
-          SPECIAL_CASE:
+          SPECIAL_CASES:
           begin
             //if a is NaN or b is NaN return NaN 
             if ((a_e == 128 && a_m != 0) || (b_e == 128 && b_m != 0)) begin

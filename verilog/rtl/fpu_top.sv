@@ -21,9 +21,12 @@
 ////                                                              ////
 ////                                                              ////
 ////  Description: This module integrate following floating       ////
-////       fpu_add.sv - floating point adder                      ////
-////       fpu_mul.sv - floating point multipler                  ////
-////       fpu_div.sv - floating point divider                    ////
+////       fpu_sp_add.sv - floating point 32bit adder             ////
+////       fpu_sp_mul.sv - floating point 32bit multipler         ////
+////       fpu_sp_div.sv - floating point 32bit divider           ////
+////       fpu_dp_add.sv - floating point 64bit adder             ////
+////       fpu_dp_mul.sv - floating point 64bit multipler         ////
+////       fpu_dp_div.sv - floating point 64bit divider           ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -41,64 +44,144 @@ module fpu_top(
         input  logic          clk,
         input  logic          rst_n,
 	input  logic [3:0]    cmd,
-        input  logic [31:0]   din1,
-        input  logic [31:0]   din2,
+        input  logic [63:0]   din1,
+        input  logic [63:0]   din2,
         input  logic          dval,
-        output logic [31:0]   result,
+        output logic [63:0]   result,
         output logic          rdy
 );
 
-parameter CMD_FPU_ADD = 4'b0001;
-parameter CMD_FPU_MUL = 4'b0010;
-parameter CMD_FPU_DIV = 4'b0011;
+parameter CMD_FPU_SP_ADD  = 4'b0001; // Single Precision (32 bit) Adder 
+parameter CMD_FPU_SP_MUL  = 4'b0010; // Single Precision (32 bit) Multipler
+parameter CMD_FPU_SP_DIV  = 4'b0011; // Single Precision (32 bit) Divider
+parameter CMD_FPU_DP_ADD  = 4'b0101; // Double Precision (64 bit) Adder
+parameter CMD_FPU_DP_MUL  = 4'b0110; // Double Precision (64 bit) Multipler
+parameter CMD_FPU_DP_DIV  = 4'b0111; // Double Precision (64 bit) Divider
 
-logic        add_rdy;
-logic [31:0] add_result;
+//--------------------------------------------------
+// Single Precision Adder Local decleration
+// -------------------------------------------------
+logic        sp_add_rdy;
+logic [31:0] sp_add_result;
 
-logic        mul_rdy;
-logic [31:0] mul_result;
+//--------------------------------------------------
+// Single Precision Multiplication Local decleration
+// -------------------------------------------------
+logic        sp_mul_rdy;
+logic [31:0] sp_mul_result;
 
-logic        div_rdy;
-logic [31:0] div_result;
+//--------------------------------------------------
+// Single Precision Division Local decleration
+// -------------------------------------------------
+logic        sp_div_rdy;
+logic [31:0] sp_div_result;
 
-wire add_dval =  (dval) & (cmd == CMD_FPU_ADD);
-wire mul_dval =  (dval) & (cmd == CMD_FPU_MUL);
-wire div_dval =  (dval) & (cmd == CMD_FPU_DIV);
+//--------------------------------------------------
+// Double Precision Adder Local decleration
+//--------------------------------------------------
+logic        dp_add_rdy;
+logic [63:0] dp_add_result;
 
-assign rdy    = (cmd == CMD_FPU_ADD) ? add_rdy    : (cmd == CMD_FPU_MUL) ? mul_rdy : div_rdy;
-assign result = (cmd == CMD_FPU_ADD) ? add_result : (cmd == CMD_FPU_MUL) ? mul_result : div_result;
+//--------------------------------------------------
+// Double Precision Multiplication Local decleration
+// -------------------------------------------------
+logic        dp_mul_rdy;
+logic [63:0] dp_mul_result;
+
+//--------------------------------------------------
+// Double Precision Division Local decleration
+// -------------------------------------------------
+logic        dp_div_rdy;
+logic [63:0] dp_div_result;
+
+//-------------------------------------------------
+//
+wire sp_add_dval =  (dval) & (cmd == CMD_FPU_SP_ADD);
+wire sp_mul_dval =  (dval) & (cmd == CMD_FPU_SP_MUL);
+wire sp_div_dval =  (dval) & (cmd == CMD_FPU_SP_DIV);
+
+wire dp_add_dval = (dval) & (cmd == CMD_FPU_DP_ADD);
+wire dp_mul_dval = (dval) & (cmd == CMD_FPU_DP_MUL);
+wire dp_div_dval = (dval) & (cmd == CMD_FPU_DP_DIV);
+
+assign rdy    = (cmd == CMD_FPU_SP_ADD) ? sp_add_rdy    : 
+	        (cmd == CMD_FPU_SP_MUL) ? sp_mul_rdy    : 
+		(cmd == CMD_FPU_SP_DIV) ? sp_div_rdy    : 
+	        (cmd == CMD_FPU_DP_ADD) ? dp_add_rdy    : 
+	        (cmd == CMD_FPU_DP_MUL) ? dp_mul_rdy    : 
+		(cmd == CMD_FPU_DP_DIV) ? dp_div_rdy    : 
+		'0;
+assign result = (cmd == CMD_FPU_SP_ADD) ? sp_add_result : 
+	        (cmd == CMD_FPU_SP_MUL) ? sp_mul_result : 
+		(cmd == CMD_FPU_SP_DIV) ? sp_div_result : 
+	        (cmd == CMD_FPU_DP_ADD) ? dp_add_result : 
+	        (cmd == CMD_FPU_DP_MUL) ? dp_mul_result : 
+		(cmd == CMD_FPU_DP_DIV) ? dp_div_result : 
+		'0;
 
 // floating point adder
-fpu_add  u_add (
-        .clk               (clk          ),
-        .rst_n             (rst_n        ),
-        .din1              (din1         ),
-        .din2              (din2         ),
-        .dval              (add_dval     ),
-        .result            (add_result   ),
-        .rdy               (add_rdy      )
+fpu_sp_add  u_sp_add (
+        .clk               (clk             ),
+        .rst_n             (rst_n           ),
+        .din1              (din1[31:0]      ),
+        .din2              (din2[31:0]      ),
+        .dval              (sp_add_dval     ),
+        .result            (sp_add_result   ),
+        .rdy               (sp_add_rdy      )
       );
 
 // floating point multipler
-fpu_mul  u_mul (
-        .clk               (clk          ),
-        .rst_n             (rst_n        ),
-        .din1              (din1         ),
-        .din2              (din2         ),
-        .dval              (mul_dval     ),
-        .result            (mul_result   ),
-        .rdy               (mul_rdy      )
+fpu_sp_mul  u_sp_mul (
+        .clk               (clk             ),
+        .rst_n             (rst_n           ),
+        .din1              (din1[31:0]      ),
+        .din2              (din2[31:0]      ),
+        .dval              (sp_mul_dval     ),
+        .result            (sp_mul_result   ),
+        .rdy               (sp_mul_rdy      )
       );
 
 // floating point divider
-fpu_div  u_div (
-        .clk               (clk          ),
-        .rst_n             (rst_n        ),
-        .din1              (din1         ),
-        .din2              (din2         ),
-        .dval              (div_dval     ),
-        .result            (div_result   ),
-        .rdy               (div_rdy      )
+fpu_sp_div  u_sp_div (
+        .clk               (clk             ),
+        .rst_n             (rst_n           ),
+        .din1              (din1[31:0]      ),
+        .din2              (din2[31:0]      ),
+        .dval              (sp_div_dval     ),
+        .result            (sp_div_result   ),
+        .rdy               (sp_div_rdy      )
       );
 
+// floating point double adder
+fpu_dp_add  u_dp_add (
+        .clk               (clk             ),
+        .rst_n             (rst_n           ),
+        .din1              (din1[63:0]      ),
+        .din2              (din2[63:0]      ),
+        .dval              (dp_add_dval     ),
+        .result            (dp_add_result   ),
+        .rdy               (dp_add_rdy      )
+      );
+
+// floating point multipler
+fpu_dp_mul  u_dp_mul (
+        .clk               (clk             ),
+        .rst_n             (rst_n           ),
+        .din1              (din1[63:0]      ),
+        .din2              (din2[63:0]      ),
+        .dval              (dp_mul_dval     ),
+        .result            (dp_mul_result   ),
+        .rdy               (dp_mul_rdy      )
+      );
+
+// floating point divider
+fpu_dp_div  u_dp_div (
+        .clk               (clk             ),
+        .rst_n             (rst_n           ),
+        .din1              (din1[63:0]      ),
+        .din2              (din2[63:0]      ),
+        .dval              (dp_div_dval     ),
+        .result            (dp_div_result   ),
+        .rdy               (dp_div_rdy      )
+      );
 endmodule

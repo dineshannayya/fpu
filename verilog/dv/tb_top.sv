@@ -108,17 +108,20 @@ Floating point multiplication in binary:
 module tb_top;
 parameter CLK_PERIOD = 10;
 
-parameter CMD_FPU_ADD = 4'b0001;
-parameter CMD_FPU_MUL = 4'b0010;
-parameter CMD_FPU_DIV = 4'b0011;
+parameter CMD_FPU_SP_ADD  = 4'b0001; // Single Precision (32 bit) Adder 
+parameter CMD_FPU_SP_MUL  = 4'b0010; // Single Precision (32 bit) Multipler
+parameter CMD_FPU_SP_DIV  = 4'b0011; // Single Precision (32 bit) Divider
+parameter CMD_FPU_DP_ADD  = 4'b0101; // Double Precision (64 bit) Adder
+parameter CMD_FPU_DP_MUL  = 4'b0110; // Double Precision (64 bit) Multipler
+parameter CMD_FPU_DP_DIV  = 4'b0111; // Double Precision (64 bit) Divider
 
 reg          clk;
 reg          rst_n;
 reg [3:0]    cmd;
-reg [31:0]   din1;
-reg [31:0]   din2;
+reg [63:0]   din1;
+reg [63:0]   din2;
 reg          dval;
-wire [31:0] result;
+wire [63:0] result;
 reg [31:0]  c_result;
 wire        rdy;
 reg         test_fail;
@@ -132,9 +135,9 @@ begin
    cmd      = 0;
    #100 rst_n = 1;
    repeat (10) @(posedge clk);
-   test_fpu(CMD_FPU_ADD,"FPU ADD");;
-   test_fpu(CMD_FPU_MUL,"FPU MUL");;
-   test_fpu(CMD_FPU_DIV,"FPU DIV");;
+   test_fpu_sp(CMD_FPU_SP_ADD,"FPU SP ADD");;
+   test_fpu_sp(CMD_FPU_SP_MUL,"FPU SP MUL");;
+   test_fpu_sp(CMD_FPU_SP_DIV,"FPU SP DIV");;
    #100;
    $finish();
 end
@@ -158,76 +161,6 @@ fpu_top u_fpu_top (
       );
 
 
-
-
-// Get mantissa
-function logic [22:0] get_mantissa;
-input [31:0] x;
-begin
-    get_mantissa = 32'h7fffff & x;
-end
-endfunction
-
-// Get Exponent
-function logic [7:0] get_exponent;
-input [31:0] x;
-begin
-    get_exponent = ((x & 32'h7f800000) >> 23) - 127;
-end
-endfunction
-
-// Get Sign
-function logic get_sign;
-input [31:0] x;
-begin
-    get_sign = ((x & 32'h80000000) >> 31);
-end
-endfunction
-
-// Not Valid Number
-function logic is_nan;
-input [31:0] x;
-begin
-    is_nan = get_exponent(x) == 128 & get_mantissa(x) != 0;
-end
-endfunction
-
-// Infinity
-function logic is_inf;
-input [31:0] x;
-begin
-    is_inf = (get_exponent(x) == 128) & (get_mantissa(x) == 0);
-end
-endfunction
-
-// Infinity
-function logic is_pos_inf;
-input [31:0] x;
-begin
-    is_pos_inf = (is_inf(x)) &  (!get_sign(x));
-end
-endfunction
-
-// Infinity
-function logic is_neg_inf;
-input [31:0] x;
-begin
-    is_neg_inf = is_inf(x) & get_sign(x);
-end
-endfunction
-
-function logic match;
-input [31:0] x;
-input [31:0] y;
-begin
-    match =     ((is_pos_inf(x) & is_pos_inf(y)) |
-                 (is_neg_inf(x) & is_neg_inf(y)) |
-                 (is_nan(x) & is_nan(y)) |
-                 (x == y));
-
-end
-endfunction
-
-`include "test_fpu.sv"
+`include "test_fpu_sp.sv"
 
 endmodule

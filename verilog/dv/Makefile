@@ -29,13 +29,14 @@ export ROOT_DIR := $(shell pwd)
 default: clean rtl
 
 rtl: clean  
-	iverilog-vpi fpu.c
+	iverilog-vpi fpu_sp.c
 	iverilog -g2012  -D SPEEDSIM  -DFUNCTIONAL  tb_top.sv -f filelist.f -o tb_top.vvp
-	vvp -M. -m fpu tb_top.vvp
+	vvp -M. -m fpu_sp tb_top.vvp
 
 gate: clean  
+	iverilog-vpi fpu_sp.c
 	iverilog -g2012  -D GL -D SPEEDSIM  -DFUNCTIONAL  tb_top.v -f filelist.f  -o tb_top.vvp
-	vvp tb_top.vvp
+	vvp -M. -m fpu_sp tb_top.vvp
 
 help:
 	@echo "To run RTL  simulation: make rtl"

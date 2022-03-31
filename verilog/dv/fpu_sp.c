@@ -165,7 +165,7 @@ void  PLIbook_fpu_add_register()
     
     tf_data.type = vpiSysFunc;
     tf_data.sysfunctype = vpiSysFuncSized;
-    tf_data.tfname =  "$c_fpu";
+    tf_data.tfname =  "$c_fpu_sp";
     tf_data.calltf = PLIbook_FpuAddCalltf;
     tf_data.compiletf = PLIbook_FpuAddCompiletf;
     tf_data.sizetf = PLIbook_FpuAddSizetf;
