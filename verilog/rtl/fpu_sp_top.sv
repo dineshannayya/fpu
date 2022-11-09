@@ -24,6 +24,8 @@
 ////       fpu_sp_add.sv - floating point 32bit adder             ////
 ////       fpu_sp_mul.sv - floating point 32bit multipler         ////
 ////       fpu_sp_div.sv - floating point 32bit divider           ////
+////       fpu_sp_f2i.sv - Float to int                           ////
+////       fpu_sp_i2f.sv - int to floating point                  ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -35,12 +37,32 @@
 ////    0.1 - 30 Mar 2021, Dinesh A                               ////
 ////          Initial integration of adder, multipler,divider     ////
 //////////////////////////////////////////////////////////////////////
+/*********************************************************************
+    RISCV Floating Point Mode
+      Rounding Mode   Mnemonics       Meaninng
+          000           RNE           Round to Nearest, ties to Even
+          001           RTZ           Round to Zero
+          010           RDN           Round Down (Towards - Infinity)
+          011           RUP           Round Up (towards + Infinity)
+          100           RMM           Round to Nearest, ties to Max Magnitute
+          101                         Reserved for future use
+          110                         Reserved for future use
+          111           DYN           In instruction's rm field select dyamic rounding mode.
+                                      In Rounding Mode register. resevred
+
+      Status Bit Decoding
+         [0] - NX - In Exact
+         [1] - UF - Under Flow
+         [2] - OF - Overflow
+         [3] - DZ - Divide by Zero
+         [4] - NV - Invalid Operation
+***************************************************************************************************/
 
 
 module fpu_sp_top(
         input  logic          clk,
         input  logic          rst_n,
-	input  logic [3:0]    cmd,
+	    input  logic [3:0]    cmd,
         input  logic [31:0]   din1,
         input  logic [31:0]   din2,
         input  logic          dval,
@@ -89,17 +111,17 @@ wire sp_i2f_dval =  (dval) & (cmd == CMD_FPU_SP_I2F);
 
 
 assign rdy    = (cmd == CMD_FPU_SP_ADD) ? sp_add_rdy    : 
-	        (cmd == CMD_FPU_SP_MUL) ? sp_mul_rdy    : 
-		(cmd == CMD_FPU_SP_DIV) ? sp_div_rdy    : 
-		(cmd == CMD_FPU_SP_F2I) ? sp_f2i_rdy    : 
-		(cmd == CMD_FPU_SP_I2F) ? sp_i2f_rdy    : 
-		'0;
+	            (cmd == CMD_FPU_SP_MUL) ? sp_mul_rdy    : 
+		        (cmd == CMD_FPU_SP_DIV) ? sp_div_rdy    : 
+		        (cmd == CMD_FPU_SP_F2I) ? sp_f2i_rdy    : 
+		        (cmd == CMD_FPU_SP_I2F) ? sp_i2f_rdy    : 
+		        '0;
 assign result = (cmd == CMD_FPU_SP_ADD) ? sp_add_result : 
-	        (cmd == CMD_FPU_SP_MUL) ? sp_mul_result : 
-		(cmd == CMD_FPU_SP_DIV) ? sp_div_result : 
-		(cmd == CMD_FPU_SP_F2I) ? sp_f2i_result : 
-		(cmd == CMD_FPU_SP_I2F) ? sp_i2f_result : 
-		'0;
+	            (cmd == CMD_FPU_SP_MUL) ? sp_mul_result : 
+		        (cmd == CMD_FPU_SP_DIV) ? sp_div_result : 
+		        (cmd == CMD_FPU_SP_F2I) ? sp_f2i_result : 
+		        (cmd == CMD_FPU_SP_I2F) ? sp_i2f_result : 
+		        '0;
 
 // floating point adder
 fpu_sp_add  u_sp_add (

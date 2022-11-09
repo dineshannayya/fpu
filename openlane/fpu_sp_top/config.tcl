@@ -29,46 +29,90 @@ set ::env(SYNTH_MAX_FANOUT) 4
 set ::env(CTS_CLK_BUFFER_LIST) "sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbuf_8"
 set ::env(CTS_SINK_CLUSTERING_SIZE) "16"
 set ::env(CLOCK_BUFFER_FANOUT) "8"
-set ::env(LEC_ENABLE) 0
 
 set ::env(VERILOG_FILES) "\
-        $script_dir/../../verilog/rtl/fpu_sp_add.sv  \
-        $script_dir/../../verilog/rtl/fpu_sp_mul.sv  \
-        $script_dir/../../verilog/rtl/fpu_sp_div.sv  \
-        $script_dir/../../verilog/rtl/fpu_sp_i2f.sv  \
-        $script_dir/../../verilog/rtl/fpu_sp_f2i.sv  \
-        $script_dir/../../verilog/rtl/fpu_sp_top.sv     \
+        $::env(DESIGN_DIR)/../../verilog/rtl/fpu_sp_add.sv  \
+        $::env(DESIGN_DIR)/../../verilog/rtl/fpu_sp_mul.sv  \
+        $::env(DESIGN_DIR)/../../verilog/rtl/fpu_sp_div.sv  \
+        $::env(DESIGN_DIR)/../../verilog/rtl/fpu_sp_i2f.sv  \
+        $::env(DESIGN_DIR)/../../verilog/rtl/fpu_sp_f2i.sv  \
+        $::env(DESIGN_DIR)/../../verilog/rtl/fpu_sp_top.sv     \
 	"
-set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl ]
+set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/../../verilog/rtl ]
 
 
-set ::env(SDC_FILE) "$script_dir/base.sdc"
-set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+set ::env(SDC_FILE) "$::env(DESIGN_DIR)/base.sdc"
+set ::env(BASE_SDC_FILE) "$::env(DESIGN_DIR)/base.sdc"
 
 set ::env(LEC_ENABLE) 0
 
 set ::env(VDD_PIN) [list {vccd1}]
 set ::env(GND_PIN) [list {vssd1}]
 
-## Floorplan
-set ::env(FP_PIN_ORDER_CFG) $script_dir/pin_order.cfg
+
+# Floorplanning
+# -------------
+
+set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
+
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 1000 1000 "
-
-set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
-set ::env(PL_TARGET_DENSITY) 0.40
+set ::env(DIE_AREA) "0 0 550 550"
 
 
-set ::env(GLB_RT_MAXLAYER) 5
-set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+# If you're going to use multiple power domains, then keep this disabled.
+set ::env(RUN_CVC) 0
+
+#set ::env(PDN_CFG) $script_dir/pdn.tcl
+
+
+set ::env(PL_TIME_DRIVEN) 1
+set ::env(PL_TARGET_DENSITY) "0.45"
+
+
+
+set ::env(FP_IO_VEXTEND) 4
+set ::env(FP_IO_HEXTEND) 4
+
+set ::env(FP_PDN_VPITCH) 100
+set ::env(FP_PDN_HPITCH) 100
+set ::env(FP_PDN_VWIDTH) 6.2
+set ::env(FP_PDN_HWIDTH) 6.2
+
+#set ::env(GLB_RT_MAXLAYER) 5
+set ::env(RT_MAX_LAYER) {met4}
+#set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+
+#Lef 
+set ::env(MAGIC_GENERATE_LEF) {1}
+set ::env(MAGIC_WRITE_FULL_LEF) {0}
+
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
 
+#LVS Issue - DEF Base looks to having issue
+set ::env(MAGIC_EXT_USE_GDS) {0}
+
+set ::env(GLB_RESIZER_MAX_SLEW_MARGIN) {1.5}
+set ::env(PL_RESIZER_MAX_SLEW_MARGIN) {1.5}
+
+set ::env(GLB_RESIZER_MAX_CAP_MARGIN) {0.25}
+set ::env(PL_RESIZER_MAX_CAP_MARGIN) {0.25}
+
+set ::env(GLB_RESIZER_MAX_WIRE_LENGTH) {500}
+set ::env(PL_RESIZER_MAX_WIRE_LENGTH) {500}
+
+
+
+
+set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) "0"
+set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "1"
+set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "1"
+set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) "1"
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"
-set ::env(QUIT_ON_LVS_ERROR) "0"
+set ::env(QUIT_ON_LVS_ERROR) "1"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 
 #Need to cross-check why global timing opimization creating setup vio with hugh hold fix
-set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "0"
+set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "1"
 
