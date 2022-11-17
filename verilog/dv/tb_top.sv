@@ -105,6 +105,9 @@ Floating point multiplication in binary:
 ***********************************************************************/
 // floating point calculator: https://www.h-schmidt.net/FloatConverter/IEEE754.html
 `timescale 1 ns/10 ps
+
+`include "fpu_parms.v"
+
 module tb_top;
 parameter CLK_PERIOD = 10;
 
@@ -139,10 +142,12 @@ begin
    $finish();
 end
 
-//initial begin
-//   $dumpfile("simx.vcd");
-//   $dumpvars(0, tb_top);
-//end
+`ifdef WFDUMP
+initial begin
+   $dumpfile("simx.vcd");
+   $dumpvars(0, tb_top);
+end
+`endif
 
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
@@ -164,6 +169,19 @@ fpu_sp_top u_fpu_sp_top (
         .rdy         (rdy     )
       );
 
+
+always @(posedge clk)
+begin
+   if(rdy) begin
+      case(cmd)
+         CMD_FPU_SP_ADD: $display("CMD: ADD DIN1: %x DIN2: %x RES: %x",din1,din2,result);
+         CMD_FPU_SP_MUL: $display("CMD: MUL DIN1: %x DIN2: %x RES: %x",din1,din2,result);
+         CMD_FPU_SP_DIV: $display("CMD: DIV DIN1: %x DIN2: %x RES: %x",din1,din2,result);
+         CMD_FPU_SP_F2I: $display("CMD: F2I DIN1: %x RES: %x",din1,result);
+         CMD_FPU_SP_I2F: $display("CMD: I2F DIN1: %x RES: %x",din1,result);
+      endcase
+  end
+end
 
 `include "test_fpu_sp.sv"
 
